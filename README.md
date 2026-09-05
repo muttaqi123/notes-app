@@ -15,7 +15,7 @@ pin, archive, a soft-delete trash, a masonry board, and search that filters as
 you type.
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="The notes board" width="900">
+  <img src="docs/thumbnail.png" alt="The notes board" width="900">
 </p>
 
 ---
@@ -212,5 +212,16 @@ VITE_API_URL=https://<your-api-host>
 
 ---
 
-Built by **Muhammad Muttaqi**. `docs/` holds a full written walkthrough of how
-this was built and why each decision went the way it did.
+## The written walkthrough
+
+**[docs/Keep-Notes-Walkthrough.pdf](docs/Keep-Notes-Walkthrough.pdf)** — twenty
+pages covering what was built, what it was built with, how it was built, and the
+reasoning behind every decision an interviewer is likely to ask about. Section 9
+is twenty likely questions with answers.
+
+`docs/` also holds the screenshots: the board, sign-in, the editor, search,
+version history, and the mobile layout.
+
+---
+
+Built by **Muhammad Muttaqi**.
