@@ -12,6 +12,9 @@ const noteVersionSchema = new mongoose.Schema(
   {
     note: { type: mongoose.Schema.Types.ObjectId, ref: 'Note', required: true, index: true },
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    // Who wrote the state this snapshot replaced. Distinct from `owner` once a
+    // note has collaborators — the history has to say which of them typed it.
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     version: { type: Number, required: true },
     title: String,
     body: String,
@@ -32,6 +35,9 @@ noteVersionSchema.methods.toJSON = function toJSON() {
   return {
     id: o._id.toString(),
     noteId: o.note.toString(),
+    author: o.author && o.author.name
+      ? { id: o.author._id.toString(), name: o.author.name, avatarColor: o.author.avatarColor }
+      : null,
     version: o.version,
     title: o.title,
     body: o.body,
