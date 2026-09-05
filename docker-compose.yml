@@ -1,0 +1,15 @@
+# A local MongoDB, so development matches production (Atlas) instead of an
+# in-memory stand-in. Optional: with no MONGODB_URI the server starts its own
+# in-memory MongoDB, which is enough to run the app but loses data on restart.
+services:
+  mongo:
+    image: mongo:7
+    container_name: notes-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - notes-mongo-data:/data/db
+
+volumes:
+  notes-mongo-data:

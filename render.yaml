@@ -1,0 +1,26 @@
+# Render Blueprint for the API.
+#
+# NOTE: a Blueprint file is only read for a service CREATED from a Blueprint.
+# A service created by hand in the dashboard ignores this file entirely, so
+# the secrets below must be set in the dashboard for such a service — a value
+# living only here is a value that is not applied.
+services:
+  - type: web
+    name: keep-notes-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false     # set in the dashboard: the Atlas SRV string
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false     # set in the dashboard: the deployed client origin

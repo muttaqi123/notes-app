@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-[#202124] antialiased;
+  }
+}
+
+@layer components {
+  /* The rendered markdown inside a note card and inside the editor. Kept as
+     one class so a card and its editor never disagree about how a note looks. */
+  .md {
+    @apply text-sm leading-relaxed break-words;
+  }
+  .md h1 { @apply text-lg font-medium mt-2 mb-1; }
+  .md h2 { @apply text-base font-medium mt-2 mb-1; }
+  .md h3 { @apply text-sm font-medium mt-2 mb-1; }
+  .md p { @apply my-1; }
+  .md ul { @apply list-disc pl-5 my-1; }
+  .md ol { @apply list-decimal pl-5 my-1; }
+  .md li { @apply my-0.5; }
+  .md a { @apply text-blue-700 underline; }
+  .md code { @apply bg-black/5 rounded px-1 py-0.5 text-[0.85em] font-mono; }
+  .md pre { @apply bg-black/5 rounded p-2 my-2 overflow-x-auto; }
+  .md pre code { @apply bg-transparent p-0; }
+  .md blockquote { @apply border-l-4 border-black/15 pl-3 my-2 text-black/70; }
+  .md hr { @apply my-3 border-black/10; }
+  .md table { @apply my-2 text-xs border-collapse; }
+  .md th, .md td { @apply border border-black/10 px-2 py-1; }
+
+  .icon-btn {
+    @apply grid h-8 w-8 place-items-center rounded-full text-[#5f6368]
+           transition hover:bg-black/10 focus:outline-none
+           focus-visible:ring-2 focus-visible:ring-black/30;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full bg-black/[.06]
+           px-2 py-0.5 text-[11px] leading-5 text-[#3c4043];
+  }
+}
+
+/* The masonry grid. CSS columns rather than a JavaScript layout: notes have
+   wildly different heights and columns handle that natively, with no resize
+   observer and no layout pass on every keystroke. */
+.masonry {
+  column-gap: 1rem;
+}
+.masonry > * {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
