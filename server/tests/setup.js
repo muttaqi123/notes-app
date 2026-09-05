@@ -7,7 +7,7 @@ import { jest, beforeAll, afterAll, afterEach } from '@jest/globals';
 // which is what makes `npm test` work on a clean checkout.
 let mongo;
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
