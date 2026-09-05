@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CloseIcon, TrashIcon, PlusIcon, LabelIcon } from './Icons.jsx';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll.js';
 
 /** Rename and delete labels. Deleting one detaches it from its notes on the
  *  server rather than deleting them, and the copy here says so, because a
@@ -7,6 +8,8 @@ import { CloseIcon, TrashIcon, PlusIcon, LabelIcon } from './Icons.jsx';
 export default function LabelManager({ labels, actions, onClose }) {
   const [draft, setDraft] = useState('');
   const [error, setError] = useState(null);
+
+  useLockBodyScroll();
 
   const add = async (e) => {
     e.preventDefault();

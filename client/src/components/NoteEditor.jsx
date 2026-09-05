@@ -4,6 +4,7 @@ import { renderMarkdown } from '../lib/markdown.js';
 import { ColorMenu, LabelMenu } from './Menus.jsx';
 import ChecklistEditor from './ChecklistEditor.jsx';
 import VersionHistory from './VersionHistory.jsx';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll.js';
 import {
   PaletteIcon, LabelIcon, ArchiveIcon, UnarchiveIcon, TrashIcon,
   PinIcon, HistoryIcon, MarkdownIcon, CheckboxIcon, NoteIcon,
@@ -34,6 +35,8 @@ export default function NoteEditor({ note, labels, actions, onClose, startOnHist
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const panelRef = useRef(null);
+
+  useLockBodyScroll();
 
   const changed = () => {
     const items = draft.items.filter((i) => i.text.trim());
