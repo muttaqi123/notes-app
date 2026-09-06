@@ -11,7 +11,7 @@ export function notFound(req, _res, next) {
  * The single place an error becomes an HTTP response. Everything below this
  * throws; nothing below this writes a status code.
  */
-// eslint-disable-next-line no-unused-vars
+ 
 export function errorHandler(err, _req, res, _next) {
   if (err instanceof ApiError) {
     const payload = { error: { message: err.message, code: err.code } };

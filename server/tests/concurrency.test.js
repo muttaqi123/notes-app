@@ -85,7 +85,6 @@ describe('pagination', () => {
   test('a cursor walks the whole set without repeating or dropping a note', async () => {
     const me = await signUp();
     for (let i = 0; i < 12; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
       await me.auth(api().post('/api/notes')).send({ title: `Note ${i}` }).expect(201);
     }
 
@@ -94,7 +93,7 @@ describe('pagination', () => {
     let pages = 0;
 
     do {
-      // eslint-disable-next-line no-await-in-loop
+       
       const res = await me.auth(
         api().get(`/api/notes?limit=5${cursor ? `&cursor=${cursor}` : ''}`)
       ).expect(200);

@@ -50,6 +50,14 @@ export function AuthProvider({ children }) {
           setUser(null);
         }
       },
+      /** Settings live on the account, so the change is reflected everywhere
+       *  the user is signed in rather than only in this browser. */
+      async updateSettings(patch) {
+        const { user: updated } = await api.updateSettings(patch);
+        setUser(updated);
+        return updated;
+      },
+      setUser,
     }),
     [user, loading]
   );

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { COLOR_KEYS, colorOf } from '../lib/colors.js';
+import { COLOR_KEYS, colorName, colorStyle } from '../lib/colors.js';
 import { PlusIcon } from './Icons.jsx';
 
 /**
@@ -31,7 +31,7 @@ export function Popover({ open, onClose, children, align = 'left', className = '
   return (
     <div
       ref={ref}
-      className={`absolute z-30 mt-1 rounded-lg border border-black/10 bg-white p-2 shadow-raised ${
+      className={`absolute z-30 mt-1 overflow-hidden rounded-lg border border-line bg-raised p-2 text-ink shadow-raised ${
         align === 'right' ? 'right-0' : 'left-0'
       } ${className}`}
     >
@@ -45,23 +45,22 @@ export function ColorMenu({ open, onClose, value, onPick }) {
     <Popover open={open} onClose={onClose} className="w-[212px]">
       <div className="grid grid-cols-6 gap-1.5">
         {COLOR_KEYS.map((key) => {
-          const c = colorOf(key);
           const selected = value === key;
           return (
             <button
               key={key}
               type="button"
-              title={c.name}
-              aria-label={c.name}
+              title={colorName(key)}
+              aria-label={colorName(key)}
               aria-pressed={selected}
               onClick={() => {
                 onPick(key);
                 onClose();
               }}
               className={`h-7 w-7 rounded-full border transition hover:scale-110 ${
-                selected ? 'ring-2 ring-[#a142f4] ring-offset-1' : ''
+                selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-raised' : ''
               }`}
-              style={{ background: c.bg, borderColor: c.border }}
+              style={colorStyle(key)}
             />
           );
         })}
@@ -89,19 +88,19 @@ export function LabelMenu({ open, onClose, labels, selectedIds, onToggle, onCrea
 
   return (
     <Popover open={open} onClose={onClose} className="w-56">
-      <p className="px-1 pb-1 text-xs font-medium text-[#5f6368]">Label note</p>
+      <p className="px-1 pb-1 text-xs font-medium text-muted">Label note</p>
       <div className="max-h-48 overflow-y-auto">
         {labels.length === 0 && (
-          <p className="px-1 py-2 text-xs text-[#5f6368]">No labels yet.</p>
+          <p className="px-1 py-2 text-xs text-muted">No labels yet.</p>
         )}
         {labels.map((label) => (
           <label
             key={label.id}
-            className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-black/5"
+            className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-subtle"
           >
             <input
               type="checkbox"
-              className="accent-[#5f6368]"
+              className="accent-accent"
               checked={selectedIds.includes(label.id)}
               onChange={() => onToggle(label.id)}
             />
@@ -109,13 +108,13 @@ export function LabelMenu({ open, onClose, labels, selectedIds, onToggle, onCrea
           </label>
         ))}
       </div>
-      <form onSubmit={submit} className="mt-1 flex items-center gap-1 border-t border-black/10 pt-2">
-        <PlusIcon width={16} height={16} className="text-[#5f6368]" />
+      <form onSubmit={submit} className="mt-1 flex items-center gap-1 border-t border-line pt-2">
+        <PlusIcon width={16} height={16} className="text-muted" />
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Create label"
-          className="w-full bg-transparent text-sm outline-none placeholder:text-[#80868b]"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-faint"
         />
       </form>
     </Popover>

@@ -108,7 +108,6 @@ export async function verify(user, code) {
 
   for (const entry of user.twoFactor.backupCodes || []) {
     if (entry.usedAt) continue;
-    // eslint-disable-next-line no-await-in-loop
     if (await bcrypt.compare(candidate, entry.codeHash)) {
       entry.usedAt = new Date();
       await user.save();
