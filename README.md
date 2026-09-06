@@ -284,13 +284,4 @@ schema, indexes and `populate` would all be hand-rolled).
 
 ---
 
-## The written walkthrough
-
-**[docs/Keep-Notes-Walkthrough.pdf](docs/Keep-Notes-Walkthrough.pdf)** — what was
-built, what with, how, and the reasoning behind every decision an interviewer is
-likely to press on. One section is the likely questions, asked directly, with
-answers.
-
----
-
 Built by **Muhammad Muttaqi**.
