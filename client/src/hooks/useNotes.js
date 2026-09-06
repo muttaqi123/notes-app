@@ -169,7 +169,11 @@ export function useNotes({ view = 'active', labelId = null, sort = 'updated' } =
 
       async create(input) {
         const { note } = await api.createNote(input);
-        if (belongsHere(note)) setNotes((current) => [note, ...current]);
+        // Merged rather than prepended. The socket broadcasts the new note to
+        // every device that can see it — including this one — and that message
+        // races the POST response. Prepending unconditionally meant whichever
+        // arrived second added a second copy, and the note appeared twice.
+        mergeNote(note);
         return note;
       },
 
@@ -240,7 +244,7 @@ export function useNotes({ view = 'active', labelId = null, sort = 'updated' } =
       mergeNote,
       dismissError: () => setError(null),
     }),
-    [load, loadMore, cursor, optimistic, withdraw, belongsHere, mergeNote]
+    [load, loadMore, cursor, optimistic, withdraw, mergeNote]
   );
 
   // Instant search, over the notes already in memory.

@@ -151,6 +151,31 @@ describe('optimistic updates', () => {
   });
 });
 
+describe('creating a note', () => {
+  test('a note the socket has already delivered is not added twice', async () => {
+    const { result } = await mount([]);
+    const created = note({ id: 'fresh', title: 'Written just now' });
+
+    // The socket broadcast beats the POST response, which is a real race: the
+    // server emits to every device that can see the note, this one included.
+    act(() => result.current.actions.mergeNote(created));
+    api.createNote.mockResolvedValue({ note: created });
+
+    await act(async () => { await result.current.actions.create({ title: 'Written just now' }); });
+
+    expect(result.current.notes).toHaveLength(1);
+  });
+
+  test('a note nobody has delivered yet is added once', async () => {
+    const { result } = await mount([]);
+    api.createNote.mockResolvedValue({ note: note({ id: 'fresh', title: 'New' }) });
+
+    await act(async () => { await result.current.actions.create({ title: 'New' }); });
+
+    expect(result.current.notes.map((n) => n.title)).toEqual(['New']);
+  });
+});
+
 describe('live updates', () => {
   test('a changed note replaces the local copy', async () => {
     const { result } = await mount([note({ id: 'a', title: 'Before' })]);

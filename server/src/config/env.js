@@ -63,4 +63,11 @@ export const env = {
   exposeDocs: isProd ? process.env.EXPOSE_API_DOCS === 'true' : true,
 
   logLevel: process.env.LOG_LEVEL || (isTest ? 'silent' : 'info'),
+
+  // Sign-ins and registrations allowed per IP per 15 minutes. Configurable
+  // because an end-to-end run registers a fresh account per test and will
+  // otherwise trip a limit meant for people, not for suites — and raising it
+  // for a test environment is honest, where switching it off would mean the
+  // path under test is not the path that ships.
+  authRateLimit: Number(process.env.AUTH_RATE_LIMIT || 30),
 };

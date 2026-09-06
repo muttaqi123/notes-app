@@ -21,14 +21,35 @@ async function register(page) {
   await page.getByPlaceholder(/^Password/).fill(password);
   await page.getByRole('button', { name: 'Create account' }).click();
 
-  await expect(page.getByPlaceholder('Take a note…')).toBeVisible();
+  // The collapsed composer is a button, not an input — it only becomes a
+  // textarea once it is opened.
+  await expect(composerButton(page)).toBeVisible();
   return { email, password };
 }
 
+const composerButton = (page) => page.getByRole('button', { name: /Take a note/ });
+
+/** The card carrying a given title. */
+const card = (page, title) =>
+  page.locator('main [role=button]').filter({ has: page.getByRole('heading', { name: title }) });
+
+/**
+ * Click one of a card's actions.
+ *
+ * The action row is revealed on hover, so the card is hovered first and the
+ * button is located within that card — clicking a bare `.first()` match can
+ * land on the card itself if the row is still fading in.
+ */
+async function cardAction(page, title, name) {
+  const target = card(page, title);
+  await target.hover();
+  await target.getByRole('button', { name }).click();
+}
+
 async function createNote(page, title, body) {
-  await page.getByPlaceholder('Take a note…').click();
+  await composerButton(page).click();
   await page.getByPlaceholder('Title').fill(title);
-  await page.getByPlaceholder(/Take a note….*markdown/).fill(body);
+  await page.getByPlaceholder(/markdown/).fill(body);
   await page.getByRole('button', { name: 'Close' }).click();
   await expect(page.getByRole('heading', { name: title })).toBeVisible();
 }
@@ -56,6 +77,8 @@ test.describe('the booking-to-board round trip', () => {
     await createNote(page, 'Dentist appointment', 'Tuesday at four');
     await createNote(page, 'Reading list', 'Kleppmann');
 
+    await expect(page.locator('main').getByRole('heading')).toHaveCount(2);
+
     const search = page.getByPlaceholder('Search your notes');
     await search.fill('dent');
     await expect(page.getByRole('heading', { name: 'Dentist appointment' })).toBeVisible();
@@ -67,7 +90,7 @@ test.describe('the booking-to-board round trip', () => {
 
   test('an empty note is discarded rather than saved', async ({ page }) => {
     await register(page);
-    await page.getByPlaceholder('Take a note…').click();
+    await composerButton(page).click();
     await page.getByRole('button', { name: 'Close' }).click();
     await expect(page.getByText('Notes you add appear here')).toBeVisible();
   });
@@ -78,13 +101,13 @@ test.describe('the note lifecycle', () => {
     await register(page);
     await createNote(page, 'Temporary', 'Not for long.');
 
-    await page.getByRole('button', { name: 'Move to trash' }).first().click();
+    await cardAction(page, 'Temporary', 'Move to trash');
     await expect(page.getByRole('heading', { name: 'Temporary' })).toBeHidden();
 
     await page.goto('/trash');
     await expect(page.getByRole('heading', { name: 'Temporary' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Restore' }).first().click();
+    await cardAction(page, 'Temporary', 'Restore');
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Temporary' })).toBeVisible();
   });
@@ -93,7 +116,7 @@ test.describe('the note lifecycle', () => {
     await register(page);
     await createNote(page, 'For later', 'Filed away.');
 
-    await page.getByRole('button', { name: 'Archive' }).first().click();
+    await cardAction(page, 'For later', 'Archive');
     await expect(page.getByRole('heading', { name: 'For later' })).toBeHidden();
 
     await page.goto('/archive');
@@ -104,18 +127,30 @@ test.describe('the note lifecycle', () => {
     await register(page);
     await createNote(page, 'Draft', 'The first draft.');
 
+    const editor = page.getByRole('dialog', { name: 'Edit note' });
+
     await page.getByRole('heading', { name: 'Draft' }).click();
-    const body = page.getByPlaceholder('Write in markdown…');
-    await body.fill('The second draft.');
-    await page.getByRole('button', { name: 'Close' }).click();
+    await expect(editor).toBeVisible();
+    await editor.getByPlaceholder('Write in markdown…').fill('The second draft.');
+    await editor.getByRole('button', { name: 'Close' }).click();
+    // Waiting for the dialog to go is not optional: its textarea still holds
+    // the same text, so an unscoped text assertion would match twice.
+    await expect(editor).toBeHidden();
 
-    await expect(page.getByText('The second draft.')).toBeVisible();
+    const board = page.locator('main');
+    await expect(board.getByText('The second draft.')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Version history' }).first().click();
-    await expect(page.getByRole('button', { name: /Restore v1/ })).toBeVisible();
-    await page.getByRole('button', { name: /Restore v1/ }).click();
+    await cardAction(page, 'Draft', 'Version history');
+    const restore = page.getByRole('button', { name: /Restore v1/ });
+    await expect(restore).toBeVisible();
+    await restore.click();
 
-    await expect(page.getByText('The first draft.')).toBeVisible();
+    // Restoring returns to the editor rather than closing it — you are put
+    // back on the note you were reading, now showing the restored text.
+    await expect(editor.getByPlaceholder('Write in markdown…')).toHaveValue('The first draft.');
+    await editor.getByRole('button', { name: 'Close' }).click();
+    await expect(editor).toBeHidden();
+    await expect(board.getByText('The first draft.')).toBeVisible();
   });
 });
 
@@ -130,10 +165,21 @@ test.describe('sharing', () => {
     const otherPage = await otherContext.newPage();
     const friend = await register(otherPage);
 
-    await page.getByRole('button', { name: 'Share' }).first().click();
-    await page.getByPlaceholder('Their email address').fill(friend.email);
-    await page.getByRole('button', { name: 'Share', exact: true }).last().click();
-    await expect(page.getByText(friend.email)).toBeVisible();
+    // Shared from inside the open note rather than from the card. The card's
+    // action row is revealed on hover, so its buttons can move under the
+    // pointer between the hit test and the click; the editor's toolbar is
+    // always on screen and is the same code path.
+    await page.getByRole('heading', { name: 'Shared plan' }).click();
+    const editor = page.getByRole('dialog', { name: 'Edit note' });
+    await expect(editor).toBeVisible();
+    await editor.getByRole('button', { name: 'Share' }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Share this note' });
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByPlaceholder('Their email address').fill(friend.email);
+    await dialog.getByRole('button', { name: 'Share', exact: true }).click();
+    await expect(dialog.getByText(friend.email)).toBeVisible();
 
     await otherPage.goto('/shared');
     await expect(otherPage.getByRole('heading', { name: 'Shared plan' })).toBeVisible();
@@ -173,6 +219,9 @@ test.describe('the interface itself', () => {
   test('keyboard shortcuts open the composer and the shortcut list', async ({ page }) => {
     await register(page);
 
+    // Bare-letter shortcuts are ignored while a field has focus, which is the
+    // correct behaviour and also means the test has to say where focus is.
+    await page.locator('main').click({ position: { x: 5, y: 5 } });
     await page.keyboard.press('c');
     await expect(page.getByPlaceholder('Title')).toBeVisible();
     await page.keyboard.press('Escape');

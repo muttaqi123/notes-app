@@ -30,7 +30,7 @@ const limiter = (limit, windowMinutes = 15) =>
     message: { error: { message: 'Too many attempts, try again later', code: 'rate_limited' } },
   });
 
-const authLimiter = limiter(30);
+const authLimiter = limiter(env.authRateLimit);
 const resetLimiter = limiter(5, 60);
 
 router.post('/register', authLimiter, validate(registerSchema), ctrl.register);
