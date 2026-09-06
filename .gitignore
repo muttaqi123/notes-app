@@ -11,3 +11,10 @@ npm-debug.log*
 .idea/
 coverage/
 .mongodb-binaries/
+
+# Uploaded attachments — user data, not source
+server/uploads/
+
+# Playwright
+playwright-report/
+test-results/

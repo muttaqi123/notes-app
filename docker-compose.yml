@@ -1,15 +1,55 @@
-# A local MongoDB, so development matches production (Atlas) instead of an
-# in-memory stand-in. Optional: with no MONGODB_URI the server starts its own
-# in-memory MongoDB, which is enough to run the app but loses data on restart.
+# The whole stack, for anyone who would rather not install Node.
+#
+#   docker compose up --build      → http://localhost:8080
+#
+# For day-to-day development, `npm run dev` with only the `mongo` service up is
+# faster and gives hot reload:
+#
+#   docker compose up -d mongo
 services:
   mongo:
     image: mongo:7
     container_name: notes-mongo
     restart: unless-stopped
-    ports:
-      - '27017:27017'
-    volumes:
-      - notes-mongo-data:/data/db
+    ports: ['27017:27017']
+    volumes: [notes-mongo-data:/data/db]
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.runCommand({ping:1}).ok']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./server
+    restart: unless-stopped
+    depends_on:
+      mongo: { condition: service_healthy }
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/keep-notes
+      CORS_ORIGIN: http://localhost:8080
+      # Development-only values. In a real deployment these come from the
+      # host's secret store, which is why the app refuses to start in
+      # production without them rather than falling back to a default.
+      JWT_ACCESS_SECRET: compose-access-secret-change-me
+      JWT_REFRESH_SECRET: compose-refresh-secret-change-me
+      EXPOSE_API_DOCS: 'true'
+    volumes: [notes-uploads:/app/uploads]
+    ports: ['4000:4000']
+
+  web:
+    build:
+      context: ./client
+      args:
+        # Baked in at build time: Vite substitutes env vars into the bundle, so
+        # this cannot be changed by restarting the container.
+        VITE_API_URL: http://localhost:4000
+    restart: unless-stopped
+    depends_on: [api]
+    ports: ['8080:80']
 
 volumes:
   notes-mongo-data:
+  notes-uploads:

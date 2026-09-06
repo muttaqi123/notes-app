@@ -454,8 +454,16 @@ export async function stats(userId) {
 
   // Notes created per day for the last 30 days, zero-filled so the chart has
   // no gaps where nothing happened.
+  //
+  // Both sides of this bucket in UTC. `$dateToString` groups in UTC unless it
+  // is told otherwise, so building the buckets with local midnight put them
+  // out of step with the data by the UTC offset — the last bucket silently
+  // came up empty for anyone east of Greenwich, for part of the day. Server
+  // time is not the user's time either way; grouping consistently is what
+  // matters, and doing it properly needs the client's zone, which the API does
+  // not currently take.
   const since = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000);
-  since.setHours(0, 0, 0, 0);
+  since.setUTCHours(0, 0, 0, 0);
 
   const perDay = await Note.aggregate([
     { $match: { owner: uid, createdAt: { $gte: since } } },

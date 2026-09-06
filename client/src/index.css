@@ -2,15 +2,121 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * The theme is a set of CSS custom properties, swapped by a `data-theme`
+ * attribute on <html>.
+ *
+ * Doing it this way rather than with Tailwind's `dark:` variant on every
+ * element means one definition per colour instead of two, and it means the
+ * note palette — eleven colours that each need a different treatment in the
+ * dark — is expressed once. Tailwind reads these through the `theme.extend`
+ * colours in the config, so `bg-surface` and `text-muted` are ordinary
+ * utilities that happen to be theme-aware.
+ */
 @layer base {
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f1f3f4;
+    --surface: #ffffff;
+    --surface-raised: #ffffff;
+    --border: #e0e0e0;
+    --border-strong: #c4c7c5;
+    --text: #202124;
+    --text-muted: #5f6368;
+    --text-faint: #80868b;
+    --accent: #1a73e8;
+    --accent-contrast: #ffffff;
+    --selected: #feefc3;
+    --overlay: rgb(0 0 0 / 0.5);
+    --shadow-card: 0 1px 2px 0 rgb(60 64 67 / 0.3), 0 1px 3px 1px rgb(60 64 67 / 0.15);
+    --shadow-raised: 0 1px 3px 0 rgb(60 64 67 / 0.3), 0 4px 8px 3px rgb(60 64 67 / 0.15);
+
+    /* The note palette. Keep's own colours. */
+    --note-default: #ffffff;   --note-default-border: #e0e0e0;
+    --note-red: #faafa8;       --note-red-border: #f2a099;
+    --note-orange: #f39f76;    --note-orange-border: #e8956d;
+    --note-yellow: #fff8b8;    --note-yellow-border: #f2eba8;
+    --note-green: #e2f6d3;     --note-green-border: #d3e8c4;
+    --note-teal: #b4ddd3;      --note-teal-border: #a5cec4;
+    --note-blue: #d4e4ed;      --note-blue-border: #c5d5de;
+    --note-purple: #d3bfdb;    --note-purple-border: #c4b0cc;
+    --note-pink: #f6e2dd;      --note-pink-border: #e7d3ce;
+    --note-brown: #e9e3d4;     --note-brown-border: #dad4c5;
+    --note-gray: #efeff1;      --note-gray-border: #e0e0e2;
+    /* Text on a coloured note is near-black in light mode. */
+    --note-ink: #202124;
+  }
+
+  [data-theme='dark'] {
+    --bg: #202124;
+    --bg-subtle: #303134;
+    --surface: #202124;
+    --surface-raised: #2d2e30;
+    --border: #5f6368;
+    --border-strong: #80868b;
+    --text: #e8eaed;
+    --text-muted: #9aa0a6;
+    --text-faint: #80868b;
+    --accent: #8ab4f8;
+    --accent-contrast: #202124;
+    --selected: #41331c;
+    --overlay: rgb(0 0 0 / 0.65);
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.6), 0 1px 3px 1px rgb(0 0 0 / 0.3);
+    --shadow-raised: 0 1px 3px 0 rgb(0 0 0 / 0.6), 0 4px 8px 3px rgb(0 0 0 / 0.35);
+
+    /* Not the light colours dimmed — Keep's actual dark palette. A tinted
+       dark surface reads as "a yellow note" without becoming a lamp. */
+    --note-default: #202124;   --note-default-border: #5f6368;
+    --note-red: #5c2b29;       --note-red-border: #6d3c3a;
+    --note-orange: #614a19;    --note-orange-border: #725b2a;
+    --note-yellow: #635d19;    --note-yellow-border: #746e2a;
+    --note-green: #345920;     --note-green-border: #456a31;
+    --note-teal: #16504b;      --note-teal-border: #27615c;
+    --note-blue: #2d555e;      --note-blue-border: #3e666f;
+    --note-purple: #42275e;    --note-purple-border: #53386f;
+    --note-pink: #5b2245;      --note-pink-border: #6c3356;
+    --note-brown: #442f19;     --note-brown-border: #55402a;
+    --note-gray: #3c3f43;      --note-gray-border: #4d5054;
+    --note-ink: #e8eaed;
+  }
+
+  html {
+    /* Tells form controls and scrollbars which way round we are, which no
+       amount of CSS on our own elements can do. */
+    color-scheme: light;
+  }
+  [data-theme='dark'] {
+    color-scheme: dark;
+  }
+
   body {
-    @apply bg-white text-[#202124] antialiased;
+    @apply bg-app text-ink antialiased;
+    font-feature-settings: 'cv05' 1;
+  }
+
+  /* A visible focus ring for keyboard users and nobody else. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  /* Someone who has asked their system for less motion means it. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer components {
-  /* The rendered markdown inside a note card and inside the editor. Kept as
-     one class so a card and its editor never disagree about how a note looks. */
+  /* Rendered markdown, in a card and in the editor. One class so a note and
+     its editor can never disagree about how it looks. */
   .md {
     @apply text-sm leading-relaxed break-words;
   }
@@ -21,34 +127,100 @@
   .md ul { @apply list-disc pl-5 my-1; }
   .md ol { @apply list-decimal pl-5 my-1; }
   .md li { @apply my-0.5; }
-  .md a { @apply text-blue-700 underline; }
-  .md code { @apply bg-black/5 rounded px-1 py-0.5 text-[0.85em] font-mono; }
-  .md pre { @apply bg-black/5 rounded p-2 my-2 overflow-x-auto; }
-  .md pre code { @apply bg-transparent p-0; }
-  .md blockquote { @apply border-l-4 border-black/15 pl-3 my-2 text-black/70; }
-  .md hr { @apply my-3 border-black/10; }
+  .md a { @apply underline underline-offset-2 decoration-[currentColor]; }
+  .md code {
+    @apply rounded px-1 py-0.5 text-[0.85em] font-mono;
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+  .md pre {
+    @apply rounded p-2 my-2 overflow-x-auto;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+  .md pre code { background: none; @apply p-0; }
+  .md blockquote {
+    @apply pl-3 my-2 opacity-80;
+    border-left: 3px solid color-mix(in srgb, currentColor 25%, transparent);
+  }
+  .md hr { @apply my-3; border-color: color-mix(in srgb, currentColor 15%, transparent); }
   .md table { @apply my-2 text-xs border-collapse; }
-  .md th, .md td { @apply border border-black/10 px-2 py-1; }
+  .md th, .md td {
+    @apply border px-2 py-1;
+    border-color: color-mix(in srgb, currentColor 15%, transparent);
+  }
+  .md img { @apply rounded my-2 max-w-full; }
+  .md input[type='checkbox'] { @apply mr-1 align-middle; }
 
   .icon-btn {
-    @apply grid h-8 w-8 place-items-center rounded-full text-[#5f6368]
-           transition hover:bg-black/10 focus:outline-none
-           focus-visible:ring-2 focus-visible:ring-black/30;
+    @apply grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted
+           transition-colors focus:outline-none
+           focus-visible:ring-2 focus-visible:ring-accent
+           disabled:cursor-not-allowed disabled:opacity-30;
+  }
+  .icon-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, currentColor 12%, transparent);
   }
 
   .chip {
-    @apply inline-flex items-center gap-1 rounded-full bg-black/[.06]
-           px-2 py-0.5 text-[11px] leading-5 text-[#3c4043];
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5
+           text-[11px] leading-5;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2
+           text-sm font-medium transition-colors focus:outline-none
+           focus-visible:ring-2 focus-visible:ring-accent
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary { @apply btn bg-accent text-accent-contrast hover:opacity-90; }
+  .btn-ghost { @apply btn text-ink hover:bg-subtle; }
+  .btn-danger { @apply btn bg-red-600 text-white hover:bg-red-700; }
+
+  .field {
+    @apply w-full rounded-md border border-line bg-surface px-3 py-2.5 text-sm
+           text-ink outline-none transition
+           placeholder:text-faint
+           focus:border-accent focus:ring-1 focus:ring-accent;
+  }
+
+  .card {
+    @apply rounded-lg border border-line bg-raised shadow-card;
+  }
+
+  /* A shimmer for content that has not arrived. Better than a spinner because
+     it says how much is coming and where it will be. */
+  .skeleton {
+    @apply rounded;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--text) 8%, transparent) 25%,
+      color-mix(in srgb, var(--text) 14%, transparent) 37%,
+      color-mix(in srgb, var(--text) 8%, transparent) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
   }
 }
 
-/* The masonry grid. CSS columns rather than a JavaScript layout: notes have
-   wildly different heights and columns handle that natively, with no resize
-   observer and no layout pass on every keystroke. */
+/* The masonry board. CSS columns rather than a JavaScript layout: notes have
+   wildly different heights, columns handle that natively, and there is no
+   resize observer and no measuring pass on every keystroke. */
 .masonry {
   column-gap: 1rem;
 }
 .masonry > * {
   break-inside: avoid;
   margin-bottom: 1rem;
+}
+
+/* Dragging is a grid, not columns: a masonry column layout cannot express
+   "this card is now between those two" while it is being moved. */
+.sortable-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
 }

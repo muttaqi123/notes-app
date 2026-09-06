@@ -1,23 +1,36 @@
 /**
- * Google Keep's own note palette, plus the darker border each colour needs so
- * a card still has an edge when it sits on a white background.
+ * The note palette.
+ *
+ * Each colour is a CSS custom property rather than a hex value, so a note
+ * carries the same colour *name* in both themes and the theme decides what
+ * that name looks like. Dark mode is not the light palette dimmed — it is
+ * Keep's own dark set, where a tinted dark surface still reads as "the yellow
+ * note" without turning into a lamp.
  */
 export const NOTE_COLORS = {
-  default: { name: 'Default', bg: '#ffffff', border: '#e0e0e0' },
-  red: { name: 'Coral', bg: '#faafa8', border: '#f2a099' },
-  orange: { name: 'Peach', bg: '#f39f76', border: '#e8956d' },
-  yellow: { name: 'Sand', bg: '#fff8b8', border: '#f2eba8' },
-  green: { name: 'Mint', bg: '#e2f6d3', border: '#d3e8c4' },
-  teal: { name: 'Sage', bg: '#b4ddd3', border: '#a5cec4' },
-  blue: { name: 'Fog', bg: '#d4e4ed', border: '#c5d5de' },
-  purple: { name: 'Dusk', bg: '#d3bfdb', border: '#c4b0cc' },
-  pink: { name: 'Blossom', bg: '#f6e2dd', border: '#e7d3ce' },
-  brown: { name: 'Clay', bg: '#e9e3d4', border: '#dad4c5' },
-  gray: { name: 'Chalk', bg: '#efeff1', border: '#e0e0e2' },
+  default: 'Default',
+  red: 'Coral',
+  orange: 'Peach',
+  yellow: 'Sand',
+  green: 'Mint',
+  teal: 'Sage',
+  blue: 'Fog',
+  purple: 'Dusk',
+  pink: 'Blossom',
+  brown: 'Clay',
+  gray: 'Chalk',
 };
 
 export const COLOR_KEYS = Object.keys(NOTE_COLORS);
 
-export function colorOf(key) {
-  return NOTE_COLORS[key] || NOTE_COLORS.default;
+/** The inline style for a note surface in whichever theme is active. */
+export function colorStyle(key) {
+  const name = NOTE_COLORS[key] ? key : 'default';
+  return {
+    background: `var(--note-${name})`,
+    borderColor: `var(--note-${name}-border)`,
+    color: 'var(--note-ink)',
+  };
 }
+
+export const colorName = (key) => NOTE_COLORS[key] || NOTE_COLORS.default;

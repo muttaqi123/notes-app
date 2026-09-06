@@ -167,7 +167,6 @@ describe('notifications', () => {
     const a = await makeNote(owner, { title: 'One' });
     const b = await makeNote(owner, { title: 'Two' });
     for (const note of [a, b]) {
-      // eslint-disable-next-line no-await-in-loop
       await owner.auth(api().post(`/api/notes/${note.id}/collaborators`))
         .send({ email: friend.email }).expect(201);
     }
