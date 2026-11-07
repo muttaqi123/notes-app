@@ -66,7 +66,7 @@ open `http://localhost:8080`.
 ## Test it
 
 ```bash
-npm test          # 95 API tests + 24 client tests
+npm test          # 95 API tests + 26 client tests
 npm run test:e2e  # Playwright, against a real browser
 npm run lint
 ```
