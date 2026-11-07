@@ -75,7 +75,7 @@ npm run lint
   optimistic concurrency, pagination, reminders, the trash purge, the activity
   log, export and stats. They run against an in-memory MongoDB, so there is no
   database to install and no fixtures to load.
-- **24 client tests** - the markdown sanitiser and the board's state machine:
+- **26 client tests** - the markdown sanitiser and the board's state machine:
   instant search, optimistic updates and their rollback, live-update merging.
 - **Playwright** - sign-up, writing a note, search, the trash round trip,
   version restore, sharing between two browser contexts, the command palette
